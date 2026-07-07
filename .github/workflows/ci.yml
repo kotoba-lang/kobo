@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: git clone --depth 1 https://github.com/kotoba-lang/kuro.git ../kuro
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
