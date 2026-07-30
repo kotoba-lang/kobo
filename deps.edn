@@ -1,5 +1,6 @@
 {:paths ["src" "resources"]
- :deps {io.github.kotoba-lang/kuro {:local/root "../kuro"}}
+ :deps {io.github.kotoba-lang/kuro {:git/url "https://github.com/kotoba-lang/kuro.git"
+                                     :git/sha "14b25f7f1cc036e545eef259ea16c525d63f4803"}}
  :aliases
  {:test {:extra-paths ["test"]
          :extra-deps {io.github.cognitect-labs/test-runner
