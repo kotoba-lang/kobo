@@ -1,0 +1,17 @@
+#!/usr/bin/env nbb
+;; nbb test entry for kobo's Node host wiring.
+;;
+;; `clojure -M:test` covers the portable model and the console; it cannot load
+;; kobo.host.*, which is ClojureScript on Node by design.
+;;
+;;   npm run test:host
+
+(ns run-host-tests
+  (:require [cljs.test :as test]
+            [kobo.host.node-test]))
+
+(defmethod test/report [::test/default :end-run-tests] [m]
+  (when-not (test/successful? m)
+    (set! (.-exitCode js/process) 1)))
+
+(test/run-tests 'kobo.host.node-test)

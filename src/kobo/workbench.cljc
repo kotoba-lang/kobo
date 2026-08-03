@@ -10,6 +10,7 @@
            :kobo/buffers {}
            :kobo/terminals {}
            :kobo/receipts []
+           :kobo/denials []
            :kobo/diagnostics []}
           attrs)))
 
@@ -38,6 +39,16 @@
   (let [sess (terminal wb terminal-id)
         rcpt (terminal/receipt sess cmd result)]
     (update wb :kobo/receipts conj rcpt)))
+
+(defn record-denial
+  "Keep a refused command alongside the ones that ran.
+
+  A denial that leaves no trace is indistinguishable from a command nobody
+  typed — the workbench would show an empty receipt list either way. This is
+  the ADR's \"inline grant view: why this component can or cannot run\", in
+  its smallest form."
+  [wb denial]
+  (update wb :kobo/denials conj denial))
 
 (defn add-diagnostics [wb diagnostics]
   (update wb :kobo/diagnostics into diagnostics))
