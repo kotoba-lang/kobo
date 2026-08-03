@@ -8,10 +8,11 @@
 
 (ns run-host-tests
   (:require [cljs.test :as test]
-            [kobo.host.node-test]))
+            [kobo.host.node-test]
+            [kobo.host.stream-node-test]))
 
 (defmethod test/report [::test/default :end-run-tests] [m]
   (when-not (test/successful? m)
     (set! (.-exitCode js/process) 1)))
 
-(test/run-tests 'kobo.host.node-test)
+(test/run-tests 'kobo.host.node-test 'kobo.host.stream-node-test)

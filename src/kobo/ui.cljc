@@ -18,7 +18,9 @@
   from shell, colors from the theme map)."
   (:require [appkit.core :as appkit]
             [clojure.string :as str]
-            [kotoba-ui.core :as ui]))
+            [kotoba-ui.core :as ui]
+            [kuro.ansi :as ansi]
+            [kuro.stream :as kstream]))
 
 (def theme
   "One map, per the design-system contract — the only place a hex belongs.
@@ -63,6 +65,88 @@
     [:div (capability-chips (get-in sess [:kuro/grant :capabilities] #{}))]]
    {:trailing (ui/badge (mode-labels (:kuro/mode sess) "?"))}))
 
+;; ------------------------------------------------------- terminal output
+
+(def ^:private ansi-class
+  "SGR の色名 → CSS クラス。**ここで生の色値を書かない** —— 端末の 16 色を
+  勝手な hex に割り当てると、light/dark の切り替えとコントラスト保証を
+  design system の外に持ち出すことになる。クラスだけ振り、実際の値は
+  `output-css` が HIG のセマンティックカラー変数から取る。"
+  {"black" "t-fg-black"     "red" "t-fg-red"       "green" "t-fg-green"
+   "yellow" "t-fg-yellow"   "blue" "t-fg-blue"     "magenta" "t-fg-magenta"
+   "cyan" "t-fg-cyan"       "white" "t-fg-white"})
+
+(def output-css
+  "端末出力の見た目。**生の色値をひとつも書かない** —— すべて HIG のトークンで、
+  light/dark の切り替えとコントラストは design system の保証をそのまま使う。
+
+  意図的な不忠実が 2 つある。端末の `black` と `white` は「その端末の背景の
+  反対側」を意味していて、絶対色ではない —— light テーマで literal な white を
+  出すと文字が消える。どちらも `--hig-color-label`（＝読める既定の前景）に
+  寄せる。**読めない忠実さより、読める近似。**
+
+  app CSS は unlayered なのでライブラリの `@layer` に常に勝つ。詳細度で
+  戦う必要はない（compound selector を書かない）。"
+  (str
+   ".t-output pre{font-family:var(--hig-font-mono);"
+   "font-size:var(--hig-text-footnote-font-size);"
+   "line-height:1.45;margin:var(--hig-spacing-2) 0 0;padding:var(--hig-spacing-3);"
+   "white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:auto;"
+   "background:var(--hig-color-secondary-system-background);"
+   "border-radius:var(--hig-radius-xs);color:var(--hig-color-label);}"
+   ;; 端末 16 色 → HIG system palette
+   ".t-fg-black{color:var(--hig-color-label);}"
+   ".t-fg-white{color:var(--hig-color-label);}"
+   ".t-fg-red{color:var(--hig-palette-red);}"
+   ".t-fg-green{color:var(--hig-palette-green);}"
+   ".t-fg-yellow{color:var(--hig-palette-orange);}"   ; yellow は本文だと薄すぎる
+   ".t-fg-blue{color:var(--hig-palette-blue);}"
+   ".t-fg-magenta{color:var(--hig-palette-purple);}"
+   ".t-fg-cyan{color:var(--hig-palette-teal);}"
+   ".t-bold{font-weight:600;}.t-dim{opacity:.65;}"
+   ".t-italic{font-style:italic;}.t-underline{text-decoration:underline;}"
+   ".t-strike{text-decoration:line-through;}"
+   ".t-bright{filter:brightness(1.15);}"
+   ".t-inverse{background:var(--hig-color-label);color:var(--hig-color-system-background);}"))
+
+(defn- span-classes [{:keys [fg bold dim italic underline strike inverse]}]
+  (->> [(when (string? fg) (ansi-class (str/replace fg "bright-" "")))
+        (when (and (string? fg) (str/starts-with? fg "bright-")) "t-bright")
+        (when bold "t-bold") (when dim "t-dim") (when italic "t-italic")
+        (when underline "t-underline") (when strike "t-strike")
+        (when inverse "t-inverse")]
+       (remove nil?)
+       (str/join " ")))
+
+(def max-output-lines
+  "画面に出す行数の上限。receipt の stdout は 1 MiB まで許されるので、
+  そのまま流すとページが数万行になる。切ったら必ず件数を出す。"
+  200)
+
+(defn output-block
+  "コマンド出力を、ANSI を解釈した行として描く。
+
+  `kuro.ansi` は 256 色 / truecolor も返すが、ここでは**名前付きの 8 色 +
+  bright だけ**をクラスにする。任意の RGB を span の style に流し込むと、
+  design system が保証しているコントラストの外に出る（背景が dark のときに
+  `rgb(20,20,20)` の前景が来たら読めない）。捨てるのではなく、色を落として
+  文字は残す —— 読めない色より、色の無い読める文字。"
+  [text]
+  (when (seq (str text))
+    (let [[ls dropped] (ansi/truncate-lines (ansi/lines text) max-output-lines)]
+      [:div {:class "t-output"}
+       [:pre
+        (for [[i line] (map-indexed vector ls)]
+          [:span {:key i}
+           (for [[j {:keys [text style]}] (map-indexed vector line)]
+             (let [c (span-classes style)]
+               (if (seq c)
+                 [:span {:key j :class c} text]
+                 [:span {:key j} text])))
+           "\n"])]
+       (when (pos? dropped)
+         [:p {:class "hig-caption2"} (str "… " dropped " 行を省略しました")])])))
+
 (defn receipt-row [r]
   (ui/list-row
    [:span
@@ -70,9 +154,27 @@
     [:span {:class "hig-caption1"}
      " " (outcome-label r)
      (when-let [ms (:kuro/duration-ms r)] (str " · " ms " ms"))
+     (when-let [n (:kuro/dropped-bytes r)] (str " · " n " B 切り捨て"))
      (when-let [cid (:kuro/stdout-cid r)]
-       [:span {:title cid} (str " · stdout " (short-cid cid))])]]
+       [:span {:title cid} (str " · stdout " (short-cid cid))])]
+    (output-block (:kuro/stdout r))
+    (output-block (:kuro/stderr r))]
    {:trailing (ui/badge (str (:kuro/exit-code r)))}))
+
+(defn running-row
+  "実行中の command。`kuro.stream` の値をそのまま読む。
+
+  終わった receipt と同じ列に混ぜない —— 「まだ終わっていない」と
+  「終わって exit 0」は別の事実で、同じ行に見せると読み手が取り違える。"
+  [st]
+  (ui/list-row
+   [:span
+    [:code (str/join " " (get-in st [:kuro/command :kuro/argv]))]
+    [:span {:class "hig-caption1"}
+     (str " 実行中 · " (kstream/total-bytes st) " B")]
+    (output-block (kstream/text-of st :stdout))
+    (output-block (kstream/text-of st :stderr))]
+   {:trailing (ui/badge "running")}))
 
 (defn buffer-row [[path buf]]
   (ui/list-row
@@ -117,6 +219,8 @@
                      {:trailing [(ui/badge (short-cid (:kobo/repo-root-cid wb)))]})}
    (listing "Terminals" (map terminal-row (sort-by key (:kobo/terminals wb)))
             "No terminal session open.")
+   (listing "Running" (map running-row (vals (:kobo/running wb)))
+            "No command is running.")
    (listing "Receipts" (map receipt-row (:kobo/receipts wb))
             "No command has run in this workbench yet.")
    (listing "Denied" (map denial-row (:kobo/denials wb))
@@ -133,6 +237,7 @@
   ([wb opts]
    (ui/->page (merge {:title "kobo — workbench console"
                       :description "Terminal sessions, grants, and command receipts."
-                      :theme theme}
+                      :theme theme
+                      :head [:style [:hiccup/raw output-css]]}
                      opts)
               (view wb))))
