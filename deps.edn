@@ -7,8 +7,8 @@
  ;; compiles next to its siblings.
  :deps {io.github.kotoba-lang/kuro
         {:git/url "https://github.com/kotoba-lang/kuro.git"
-         ;; kuro.ansi + kuro.stream + streaming host (stream-node)
-         :git/sha "2c3d7cf43749df9e51c0f2c1f5ac124c677bc328"}
+         ;; kuro.ansi の cljs parity 修正込み（それ以前は cljs で出力が消えた）
+         :git/sha "39be9cfc054ea6062a48865c523fdc8e894e6123"}
         io.github.kotoba-lang/kotoba-ui
         {:git/url "https://github.com/kotoba-lang/kotoba-ui.git"
          :git/sha "4fd389966335564b53ed2cbdc41f0868ede73332"}

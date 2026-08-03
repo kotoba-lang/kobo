@@ -41,6 +41,7 @@ jobs:
         with:
           node-version: "22"
       - run: npm install
-      # Actually spawns processes: proves a receipt in the workbench
-      # describes a command that really ran.
+      # Actually spawns processes AND serves the console over real HTTP:
+      # proves a receipt describes a command that really ran, and that the
+      # page a browser gets is produced by the runtime that really serves it.
       - run: npm run test:host
