@@ -5,6 +5,7 @@
             [kobo.editor :as editor]
             [kobo.ui :as ui]
             [kobo.workbench :as wb]
+            [kuro.stream :as kstream]
             [kuro.terminal :as t]))
 
 (defn- populated []
@@ -25,6 +26,46 @@
                                :kuro/argv ["cat" "/etc/passwd"]))
       (wb/add-diagnostics (editor/aiueos-manifest-diagnostics
                            "component.edn" {:aiueos/typo true}))))
+
+(def ^:private e "\u001b")
+
+(deftest ansi-output-is-rendered-not-leaked
+  (let [w (-> (wb/workbench "bafkreiansi")
+              (wb/open-terminal "t1" :terminal-safe)
+              (wb/command-receipt "t1" (t/command ["git" "status"])
+                                  {:exit-code 0
+                                   :stdout (str e "[32mM " e "[0msrc/kobo/ui.cljc\n")}))
+        html (ui/console w)]
+    (testing "escape sequences never reach the page"
+      (is (not (str/includes? html "[32m")))
+      (is (not (str/includes? html e))))
+    (testing "the colour survives as a class, not as an inline hex"
+      (is (str/includes? html "t-fg-green"))
+      (is (str/includes? html "src/kobo/ui.cljc")))))
+
+(deftest output-is-line-capped-and-says-so
+  (let [big (str/join "\n" (map str (range 500)))
+        w (-> (wb/workbench "bafkreibig")
+              (wb/open-terminal "t1" :terminal-safe)
+              (wb/command-receipt "t1" (t/command ["yes"]) {:exit-code 0 :stdout big}))
+        html (ui/console w)]
+    (is (str/includes? html "行を省略しました"))
+    (is (str/includes? html (str (- 500 ui/max-output-lines)))
+        "the dropped-line count must be exact, not a rounded reassurance")))
+
+(deftest running-commands-are-not-shown-as-finished
+  (let [st (-> (kstream/open (t/session "t1" "cid" :terminal-safe)
+                             (t/command ["npm" "test"]))
+               (kstream/append-chunk {:stream :stdout :text "compiling…"}))
+        w (-> (wb/workbench "bafkreirun")
+              (wb/open-terminal "t1" :terminal-safe)
+              (wb/set-running "t1" st))
+        html (ui/console w)]
+    (is (str/includes? html "npm test"))
+    (is (str/includes? html "running"))
+    (is (str/includes? html "compiling"))
+    (testing "an unfinished command is not in the receipt list"
+      (is (str/includes? html "No command has run in this workbench yet.")))))
 
 (deftest console-renders-a-document
   (let [html (ui/console (populated))]

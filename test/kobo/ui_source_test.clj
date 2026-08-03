@@ -16,9 +16,17 @@
     (is (nil? (re-find #"#[0-9A-Fa-f]{6}" body)))))
 
 (deftest no-app-authored-typography
-  (testing "type comes from the 11 HIG text styles, never from app CSS"
-    (is (nil? (re-find #"font-size" src)))
-    (is (nil? (re-find #"font-family" src)))))
+  (testing "type may reference tokens but must never carry a literal value"
+    ;; 最初の版は `font-size` の出現そのものを禁じていた。端末出力を等幅で
+    ;; 出すには `font-family:var(--hig-font-mono)` が要る —— これは design
+    ;; system の**正しい使い方**であって違反ではない。禁じるべきは
+    ;; `font-size:13px` のような literal で、それは token を迂回する。
+    (doseq [prop ["font-size" "font-family" "color" "background"]]
+      (let [literals (->> (re-seq (re-pattern (str prop ":\\s*([^;\"]+)")) src)
+                          (map second)
+                          (remove #(str/starts-with? (str/trim %) "var(--hig-")))]
+        (is (empty? literals)
+            (str prop " with a non-token value: " (pr-str literals)))))))
 
 (deftest single-require-point
   (testing "apps require kotoba-ui.core (+ appkit.core), never the layers below"
