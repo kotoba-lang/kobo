@@ -1,13 +1,36 @@
 {:paths ["src" "resources"]
- :deps {io.github.kotoba-lang/kuro {:git/url "https://github.com/kotoba-lang/kuro.git"
-                                     :git/sha "14b25f7f1cc036e545eef259ea16c525d63f4803"}}
+ ;; Siblings are named by GIT COORDINATE, not :local/root: a :local/root dep
+ ;; resolves relative to the consumer's gitlibs directory, so a library that
+ ;; uses one cannot be consumed outside a monorepo checkout. The :local alias
+ ;; overrides them to sibling checkouts for monorepo work, and CI runs the
+ ;; plain git path — which proves kobo is still consumable, not merely that it
+ ;; compiles next to its siblings.
+ :deps {io.github.kotoba-lang/kuro
+        {:git/url "https://github.com/kotoba-lang/kuro.git"
+         ;; kuro.host.node (terminal-safe backing) + single-namespace receipts
+         :git/sha "90c2c899a8ad60f9b5e3f22600e121d3ee54d4f2"}
+        io.github.kotoba-lang/kotoba-ui
+        {:git/url "https://github.com/kotoba-lang/kotoba-ui.git"
+         :git/sha "4fd389966335564b53ed2cbdc41f0868ede73332"}
+        io.github.kotoba-lang/appkit
+        {:git/url "https://github.com/kotoba-lang/appkit.git"
+         :git/sha "03b1c5373817229060f3fac9e41e97775c320997"}}
  :aliases
- {:test {:extra-paths ["test"]
+ {:local {:override-deps
+          {io.github.kotoba-lang/kuro {:local/root "../kuro"}
+           io.github.kotoba-lang/kotoba-ui {:local/root "../kotoba-ui"}
+           io.github.kotoba-lang/appkit {:local/root "../appkit"}}}
+  :test {:extra-paths ["test"]
          :extra-deps {io.github.cognitect-labs/test-runner
-                      {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+                      {:git/tag "v0.5.1" :git/sha "dfb30dd"}
+                      ;; the deterministic HIG/WCAG audit — the console is
+                      ;; scored, not eyeballed (ADR-2607132300)
+                      io.github.kotoba-lang/design-quality
+                      {:git/url "https://github.com/kotoba-lang/design-quality.git"
+                       :git/sha "fb766e2f79c088de05e289554c9de049e7909bd3"}}
          :main-opts ["-m" "cognitect.test-runner"]
          :exec-fn cognitect.test-runner.api/test}
-       ;; clj-kondo as a Clojars lib (no Homebrew/system install needed).
-       :lint {:replace-deps {clj-kondo/clj-kondo {:mvn/version "2024.11.14"}}
+  ;; clj-kondo as a Clojars lib (no Homebrew/system install needed).
+  :lint {:replace-deps {clj-kondo/clj-kondo {:mvn/version "2024.11.14"}}
          :main-opts ["-m" "clj-kondo.main" "--lint" "src" "test"
                      "--fail-level" "error"]}}}

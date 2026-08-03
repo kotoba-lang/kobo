@@ -10,7 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: git clone --depth 1 https://github.com/kotoba-lang/kuro.git ../kuro
+      # No sibling clone: deps are git coordinates, so this job proves kobo is
+      # consumable from outside a monorepo checkout rather than only that it
+      # compiles next to its siblings.
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -18,6 +20,27 @@ jobs:
       - uses: DeLaGuardo/setup-clojure@13.4
         with:
           cli: latest
+      # Portable model + the console, including its deterministic
+      # HIG/WCAG score gate. Cannot load kobo.host.*, which is
+      # ClojureScript on Node by design.
       - run: clojure -M:test
-
       - run: clojure -M:lint
+
+  host:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: DeLaGuardo/setup-clojure@13.4
+        with:
+          cli: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install
+      # Actually spawns processes: proves a receipt in the workbench
+      # describes a command that really ran.
+      - run: npm run test:host
