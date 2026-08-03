@@ -211,13 +211,47 @@
       (appkit/list-view rows)
       (empty-note empty-text))))
 
+(defn command-bar
+  "コマンド入力・stdin・停止。**`:write-surface? true` のときだけ描く。**
+
+  ここまで console は `<form>` も `<button>` も出さなかった。理由は
+  「どこにも送れない入力欄は無い方がまし」で、当時は正しかった —— 送り先が
+  無かったので。`kuro.host.stream-node` に `:write`（stdin）と `:kill` が
+  入った今、**前提が変わった**ので規約側を見直す。
+
+  read-only の運用ダッシュボードとして使う経路（`kotoba-lang` の 23 repo と
+  同じ用途）は既定のまま残す —— write surface は明示的に要求した人だけが得る。
+
+  操作は `data-act` に載る（design system の `:act` 契約）。値の読み取りは
+  `id` から行う。ここに JS は書かない —— 配線は `kobo.server` が入れる。"
+  [terminal-id]
+  (ui/section {:title "Command"}
+    (ui/stack {:gap :3}
+      (ui/stack {:direction :horizontal :gap :3}
+        (ui/text-field {:id "kobo-argv"
+                        :placeholder "git status --short"
+                        :aria-label "実行するコマンド（argv、シェル解釈なし）"})
+        (ui/button "Run" {:act [:run terminal-id]}))
+      [:p {:class "hig-caption2"}
+       "シェルは通しません。空白で区切った argv としてそのまま渡します。"]
+      (ui/stack {:direction :horizontal :gap :3}
+        (ui/text-field {:id "kobo-stdin"
+                        :placeholder "stdin に送る行"
+                        :aria-label "実行中のコマンドへの標準入力"})
+        (ui/button "Send" {:act [:stdin terminal-id]})
+        (ui/button "Kill" {:act [:kill terminal-id]})))))
+
 (defn view
-  "The workbench console as hiccup — mountable as-is, or wrapped by `console`."
-  [wb]
-  (ui/app-shell
-   {:nav (ui/nav-bar "kobo"
-                     {:trailing [(ui/badge (short-cid (:kobo/repo-root-cid wb)))]})}
-   (listing "Terminals" (map terminal-row (sort-by key (:kobo/terminals wb)))
+  "The workbench console as hiccup — mountable as-is, or wrapped by `console`.
+
+  opts: `:write-surface?`（既定 false）・`:terminal-id`（既定 \"t1\"）。"
+  ([wb] (view wb {}))
+  ([wb opts]
+   (ui/app-shell
+    {:nav (ui/nav-bar "kobo"
+                      {:trailing [(ui/badge (short-cid (:kobo/repo-root-cid wb)))]})}
+    (when (:write-surface? opts) (command-bar (:terminal-id opts "t1")))
+    (listing "Terminals" (map terminal-row (sort-by key (:kobo/terminals wb)))
             "No terminal session open.")
    (listing "Running" (map running-row (vals (:kobo/running wb)))
             "No command is running.")
@@ -228,7 +262,7 @@
    (listing "Buffers" (map buffer-row (sort-by key (:kobo/buffers wb)))
             "No buffer open.")
    (listing "Diagnostics" (map diagnostic-row (:kobo/diagnostics wb))
-            "No diagnostics.")))
+            "No diagnostics."))))
 
 (defn console
   "The complete HTML document for a workbench. opts: `:theme` (defaults to
@@ -239,5 +273,8 @@
                       :description "Terminal sessions, grants, and command receipts."
                       :theme theme
                       :head [:style [:hiccup/raw output-css]]}
-                     opts)
-              (view wb))))
+                     (dissoc opts :write-surface? :terminal-id :body-attrs))
+              ;; live 更新はこの 1 要素を差し替える。id を view の外（console）で
+              ;; 付けるのは、view を別の枠に埋め込む使い方を塞がないため。
+              [:div (merge {:id "kobo-root"} (:body-attrs opts))
+               (view wb opts)])))

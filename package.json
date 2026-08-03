@@ -1,9 +1,10 @@
 {
   "name": "@kotoba-lang/kobo",
   "private": true,
-  "description": "nbb harness for kobo's Node host wiring. The model and the console need no npm.",
+  "description": "nbb harness for kobo: the local workbench console server and the Node host tests.",
   "scripts": {
-    "test:host": "nbb --classpath \"$(clojure -Spath -M:test)\" test/run_host_tests.cljs"
+    "test:host": "nbb --classpath \"$(clojure -Spath -M:test)\" test/run_host_tests.cljs",
+    "console": "nbb --classpath \"$(clojure -Spath -M:test)\" bin/kobo-console.cljs"
   },
   "devDependencies": {
     "nbb": "1.4.208"

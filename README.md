@@ -15,8 +15,8 @@ kobo = editor + terminal + grants + receipts + repo facts
 kuro = terminal model used by kobo
 ```
 
-**Status: R2** — the console renders real terminal output (ANSI-aware) and the
-workbench holds live, running commands. Command entry and editing are not
+**Status: R2** — `npm run console` serves a live workbench on 127.0.0.1: run a
+command, watch its output stream in, send stdin, kill it. Editing is not
 wired; see *Not yet built*.
 
 ## Boundaries
@@ -50,6 +50,39 @@ wired; see *Not yet built*.
 A command whose capabilities the session does not grant is **recorded as a
 denial**, not dropped — otherwise an empty receipt list means both "refused"
 and "never typed".
+
+## Use it — `npm run console`
+
+```sh
+npm install
+npm run console                              # http://127.0.0.1:7777/
+npm run console -- --port 8080 --repo-root ../kuro
+```
+
+It prints a URL and a per-start token. Open the URL: you get the console with
+a command bar — type an argv, hit **Run**, watch output arrive as it is
+produced, send **stdin**, **Kill** it.
+
+### This endpoint starts processes — how it is kept narrow
+
+| | |
+|---|---|
+| bind | **127.0.0.1 only.** There is no `--host` flag; a "you could set 0.0.0.0" shape eventually gets set to 0.0.0.0 |
+| write paths | `POST /run` `/stdin` `/kill` require the per-start `X-Kobo-Token` **header** — a custom header forces a CORS preflight, so another page cannot silently POST here |
+| origin | non-localhost browser origins are refused |
+| token | printed on stdout, never put in a URL (URLs land in history) |
+| execution | unchanged from `kuro` — capability check, argv with no shell, cwd confinement, declared env, deadline, output cap. **The server relaxes none of it** |
+
+**It is still not isolation.** A capability set is an intent record, not a
+kernel: a command you run here touches this machine's disk and network. This
+is a local tool for your own repo, not a sandbox for untrusted code.
+
+### The browser glue is the one piece of raw JavaScript
+
+`kobo` has no ClojureScript browser build (nbb targets Node), so the ~20 lines
+that wire clicks to `fetch` and an `EventSource` to `innerHTML` are an inline
+`<script>` string. It is marked **non-authoritative**: no logic goes there. The
+day it needs a branch is the day to decide whether kobo gets a cljs build.
 
 ## Running a command live
 
@@ -110,7 +143,12 @@ tree, and the LSP bridge.
 
 ```sh
 clojure -M:test                 # model + console + design-quality gate (JVM)
-npm install && npm run test:host  # Node host wiring (nbb) — really spawns processes
+npm install && npm run test:host  # host wiring + the HTTP server (nbb), for real
 ```
+
+`test:host` spawns real processes and drives the real server over real HTTP —
+including that a coloured command's output reaches the served page as classes.
+That last check exists because `kuro.ansi` was once JVM-green and cljs-dead,
+and this server is the cljs side.
 
 Monorepo work can point the deps at sibling checkouts with `-M:local:test`.
