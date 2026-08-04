@@ -41,7 +41,7 @@ wired; see *Not yet built*.
 
 (-> (wb/workbench "repo-cid")
     (wb/open-buffer (wb/buffer "README.md" "# hello\n"))
-    (wb/open-terminal "t1" :terminal-safe)
+    (wb/open-terminal "t1" :terminal-repo)
     (host/run "t1" ["git" "status" "--short"] {:repo-root "."})
     (ui/console))
 ;; => "<!doctype html>…kobo — workbench console…"
@@ -92,7 +92,7 @@ takes time, put the workbench in an atom and stream into it:
 ```clojure
 (require '[kobo.host.stream-node :as sh])   ; nbb / Node only
 
-(def w (atom (-> (wb/workbench "repo-cid") (wb/open-terminal "t1" :terminal-safe))))
+(def w (atom (-> (wb/workbench "repo-cid") (wb/open-terminal "t1" :terminal-repo))))
 
 (def h (sh/start w "t1" ["npm" "test"] {:repo-root "."}))
 ((:write h) "y\n")   ; stdin
@@ -138,6 +138,28 @@ terminal tabs, status). This is the read-only subset. Missing: event wiring and 
 real PTY (the child is on pipes, so full-screen programs do not work), the
 `kobo.agent` durable loop, `kobo.repo` (the kotoba-rad/git bridge), the file
 tree, and the LSP bridge.
+
+## Rendering in the kotoba browser
+
+The console is rendered by **`kotoba-lang/browser`** — this workspace's own
+WASM/`kotoba:dom` engine — as a CI gate, not only by Chrome. If the workbench
+UI cannot be drawn by our own browser, our own tools do not work on each other.
+
+```sh
+npm run test:browser-render     # monorepo only, see below
+```
+
+It asserts the document lays out, that the page's own `<style>` reaches the
+engine (over 100 CSS rules — it was **0** until browser learned to read
+`<style>` on 2026-08-04), that the workbench's content is really drawn as
+glyphs, and that no escape sequence survives into one.
+
+It lives behind its own alias and path because `kotoba-lang/browser` cannot be
+consumed by git coordinate: `dom-gpu` ↔ `cssom` ↔ `htmldom` reference each
+other with `:local/root`, a cycle git deps cannot express. So the gate runs
+where sibling checkouts exist — in the monorepo, or in a CI job that clones
+them the way browser's own CI does. **That constraint is inherited from
+browser, not invented here.**
 
 ## Tests
 

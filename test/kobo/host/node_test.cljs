@@ -10,7 +10,7 @@
 (def node (.-execPath js/process))
 
 (defn- open []
-  (-> (wb/workbench "bafkreitestrepo") (wb/open-terminal "t1" :terminal-safe)))
+  (-> (wb/workbench "bafkreitestrepo") (wb/open-terminal "t1" :terminal-repo)))
 
 (deftest receipt-lands-in-the-workbench
   (let [w (host/run (open) "t1" [node "-e" "process.stdout.write('hi')"]
@@ -27,7 +27,7 @@
   (testing "a refused command is recorded, not dropped — an empty receipt list
             must not mean both 'denied' and 'never typed'"
     (let [w (-> (wb/workbench "bafkreitestrepo")
-                (wb/open-terminal "t1" :terminal-safe)
+                (wb/open-terminal "t1" :terminal-repo)
                 (host/run "t1" [node "-e" "0"]
                           {:repo-root "." :kuro/requires #{"secrets/get"}}))]
       (is (empty? (:kobo/receipts w)))

@@ -9,7 +9,7 @@
 (def node (.-execPath js/process))
 
 (defn- open-atom []
-  (atom (-> (wb/workbench "bafkreitestrepo") (wb/open-terminal "t1" :terminal-safe))))
+  (atom (-> (wb/workbench "bafkreitestrepo") (wb/open-terminal "t1" :terminal-repo))))
 
 (deftest running-then-receipt
   (async done

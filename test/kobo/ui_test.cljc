@@ -11,7 +11,7 @@
 (defn- populated []
   (-> (wb/workbench "bafkreiexamplerepocid000000000000000000000000000000000000")
       (wb/open-buffer (wb/buffer "README.md" "# hello\nworld\n"))
-      (wb/open-terminal "t1" :terminal-safe)
+      (wb/open-terminal "t1" :terminal-repo)
       (wb/open-terminal "t2" :terminal-build)
       (wb/command-receipt "t1" (t/command ["clojure" "-M:test"])
                           {:exit-code 0 :stdout "ok\n"
@@ -20,7 +20,7 @@
       (wb/command-receipt "t1" (t/command ["node" "-e" "while(1){}"])
                           {:exit-code 124 :timed-out? true :duration-ms 300})
       (wb/record-denial (assoc (t/denial (wb/terminal (wb/open-terminal
-                                                      (wb/workbench "x") "t1" :terminal-safe)
+                                                      (wb/workbench "x") "t1" :terminal-repo)
                                                      "t1")
                                          ["secrets/get"])
                                :kuro/argv ["cat" "/etc/passwd"]))
@@ -31,7 +31,7 @@
 
 (deftest ansi-output-is-rendered-not-leaked
   (let [w (-> (wb/workbench "bafkreiansi")
-              (wb/open-terminal "t1" :terminal-safe)
+              (wb/open-terminal "t1" :terminal-repo)
               (wb/command-receipt "t1" (t/command ["git" "status"])
                                   {:exit-code 0
                                    :stdout (str e "[32mM " e "[0msrc/kobo/ui.cljc\n")}))
@@ -49,7 +49,7 @@
   ;; 載るのは正しいが、HTML には `key` 属性が無い。修正は shitsuke.hiccup 側
   ;; （SSR twin が落とす）—— ここはその回帰テストで、**見つけた側が見張る**。
   (let [w (-> (wb/workbench "bafkreikey")
-              (wb/open-terminal "t1" :terminal-safe)
+              (wb/open-terminal "t1" :terminal-repo)
               (wb/command-receipt "t1" (t/command ["x"])
                                   {:exit-code 0 :stdout "one\ntwo\n"}))
         html (ui/console w)]
@@ -59,7 +59,7 @@
 (deftest output-is-line-capped-and-says-so
   (let [big (str/join "\n" (map str (range 500)))
         w (-> (wb/workbench "bafkreibig")
-              (wb/open-terminal "t1" :terminal-safe)
+              (wb/open-terminal "t1" :terminal-repo)
               (wb/command-receipt "t1" (t/command ["yes"]) {:exit-code 0 :stdout big}))
         html (ui/console w)]
     (is (str/includes? html "行を省略しました"))
@@ -67,11 +67,11 @@
         "the dropped-line count must be exact, not a rounded reassurance")))
 
 (deftest running-commands-are-not-shown-as-finished
-  (let [st (-> (kstream/open (t/session "t1" "cid" :terminal-safe)
+  (let [st (-> (kstream/open (t/session "t1" "cid" :terminal-repo)
                              (t/command ["npm" "test"]))
                (kstream/append-chunk {:stream :stdout :text "compiling…"}))
         w (-> (wb/workbench "bafkreirun")
-              (wb/open-terminal "t1" :terminal-safe)
+              (wb/open-terminal "t1" :terminal-repo)
               (wb/set-running "t1" st))
         html (ui/console w)]
     (is (str/includes? html "npm test"))

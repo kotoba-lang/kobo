@@ -195,14 +195,14 @@
   "サーバを起動して `{:server :state :token :port}` を返す。
 
   opts: `:port`（既定 7777、0 で任意の空きポート）・`:repo-root`（既定 \".\"）・
-  `:mode`（既定 `:terminal-safe`）・`:terminal-id`（既定 \"t1\"）・`:token`・
+  `:mode`（既定 `:terminal-repo`）・`:terminal-id`（既定 \"t1\"）・`:token`・
   `:timeout-ms` `:max-output-bytes`（`kuro` に渡す）。"
   ([] (serve {}))
   ([opts]
    (let [terminal-id (:terminal-id opts "t1")
          repo-root (:repo-root opts ".")
          wb-atom (atom (-> (wb/workbench (str "local:" repo-root))
-                           (wb/open-terminal terminal-id (:mode opts :terminal-safe))))
+                           (wb/open-terminal terminal-id (:mode opts :terminal-repo))))
          state {:wb-atom wb-atom
                 :clients (atom [])
                 :handle (atom nil)
