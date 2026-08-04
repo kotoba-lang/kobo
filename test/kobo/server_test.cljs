@@ -260,3 +260,19 @@
                          "no raw ESC byte on the page")
                      (server/stop! (:srv ctx))
                      (done))))))))
+
+(deftest port-in-use-explains-itself
+  ;; 実測 2026-08-04: 2 本目を同じポートで起動したら node の unhandled 'error'
+  ;; として 15 行の stack trace が出た。理由も次の一手もその中に無い。
+  ;; **使い方の誤りに stack trace を返すのは、答えを持っていて黙るのと同じ。**
+  (async done
+    (with-server
+      (fn [ctx]
+        (let [port (js/parseInt (last (str/split (:base ctx) #":")) 10)]
+          (server/serve
+           {:port port :repo-root "."
+            :on-error (fn [^js err]
+                        (is (= "EADDRINUSE" (.-code err))
+                            "the second listen fails, and we get told which way")
+                        (server/stop! (:srv ctx))
+                        (done))}))))))
