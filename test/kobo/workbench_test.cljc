@@ -8,11 +8,11 @@
 (deftest workbench-opens-buffer-terminal-and-records-receipt
   (let [w (-> (wb/workbench "cid:repo")
               (wb/open-buffer (wb/buffer "README.md" "# hello\n"))
-              (wb/open-terminal "term-1" :terminal-safe))
+              (wb/open-terminal "term-1" :terminal-repo))
         cmd (terminal/command ["clojure" "-M:test"])
         w2 (wb/command-receipt w "term-1" cmd {:exit-code 0 :stdout "ok\n" :stderr ""})]
     (is (= "# hello\n" (get-in w [:kobo/buffers "README.md" :kobo.buffer/text])))
-    (is (= :terminal-safe (get-in w [:kobo/terminals "term-1" :kuro/mode])))
+    (is (= :terminal-repo (get-in w [:kobo/terminals "term-1" :kuro/mode])))
     (is (= 1 (count (:kobo/receipts w2))))
     (is (= :kobo/workbench (:kotoba/type (first (wb/kotoba-facts w2)))))))
 

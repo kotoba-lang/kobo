@@ -30,7 +30,12 @@
   {:accent "#3C7DD9" :appearance :auto})
 
 (def ^:private mode-labels
-  {:terminal-safe "safe"
+  "画面に出す mode 名。**`kuro` の `:kuro/label` と同じ語にする** ——
+  keyword を `:terminal-repo` に改名したとき、ここのラベル文字列だけ \"safe\" の
+  まま残っていて、画面には隔離を主張する語が出続けていた（kotoba-browser の
+  render gate が drawn text の中に見つけた）。**改名は keyword ではなく、
+  読む人が見る語に対して行うもの。**"
+  {:terminal-repo "repo"
    :terminal-build "build"
    :terminal-agent "agent"
    :terminal-host "host"})

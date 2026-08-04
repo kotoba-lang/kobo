@@ -45,3 +45,24 @@ jobs:
       # proves a receipt describes a command that really ran, and that the
       # page a browser gets is produced by the runtime that really serves it.
       - run: npm run test:host
+
+  # console を kotoba-lang/browser で render する gate。
+  # browser は git 座標で consume できない（dom-gpu ↔ cssom ↔ htmldom の
+  # :local/root 循環）ので、browser 自身の CI と同じく sibling を clone する。
+  browser-render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: DeLaGuardo/setup-clojure@13.4
+        with:
+          cli: latest
+      - name: Checkout the kotoba browser engine and its siblings
+        run: |
+          for r in browser dom-gpu cssom htmldom quickjs org-w3-aria devtools; do
+            git clone --depth 1 https://github.com/kotoba-lang/$r ../$r
+          done
+      - run: clojure -M:browser-render:test -d test-browser
