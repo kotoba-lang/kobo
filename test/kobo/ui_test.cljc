@@ -43,6 +43,19 @@
       (is (str/includes? html "t-fg-green"))
       (is (str/includes? html "src/kobo/ui.cljc")))))
 
+(deftest no-reagent-only-attributes-in-the-markup
+  ;; 実測 2026-08-04: 配信された console の出力 span がすべて `key="0"` を
+  ;; 持っていた。`:key` は reagent が seq 由来の要素に要求するもので hiccup に
+  ;; 載るのは正しいが、HTML には `key` 属性が無い。修正は shitsuke.hiccup 側
+  ;; （SSR twin が落とす）—— ここはその回帰テストで、**見つけた側が見張る**。
+  (let [w (-> (wb/workbench "bafkreikey")
+              (wb/open-terminal "t1" :terminal-safe)
+              (wb/command-receipt "t1" (t/command ["x"])
+                                  {:exit-code 0 :stdout "one\ntwo\n"}))
+        html (ui/console w)]
+    (is (not (str/includes? html "key=\"")))
+    (is (str/includes? html "one") "…while the content itself still renders")))
+
 (deftest output-is-line-capped-and-says-so
   (let [big (str/join "\n" (map str (range 500)))
         w (-> (wb/workbench "bafkreibig")

@@ -213,6 +213,29 @@
                                  (select-keys opts [:timeout-ms :max-output-bytes]))}
          srv (http/createServer (fn [req res] (route state req res)))
          result {:server srv :state state :token (:token state)}]
+     ;; listen が失敗したときに **何が悪いのかを言う**。
+     ;;
+     ;; 既定では node は "error" イベントに listener が無いと unhandled として
+     ;; 生の stack trace で落ちる。実測 2026-08-04、2 本目を同じポートで起動して
+     ;; `Error: listen EADDRINUSE` が 15 行のトレースで出た —— 起動に失敗した
+     ;; 理由（ポートが埋まっている）も、次にどうすればよいか（`--port`）も
+     ;; その中に無い。**使い方の誤りに stack trace を返すのは、答えを持って
+     ;; いるのに黙っているのと同じ。**
+     (.on srv "error"
+          (fn [^js err]
+            (if-let [f (:on-error opts)]
+              (f err)
+              (do (js/console.error
+                   (case (.-code err)
+                     "EADDRINUSE"
+                     (str "kobo: ポート " (:port opts default-port) " は既に使用中です。\n"
+                          "  別のポートで起動: npm run console -- --port 7778\n"
+                          "  使用中のプロセス: lsof -ti :" (:port opts default-port))
+                     "EACCES"
+                     (str "kobo: ポート " (:port opts default-port) " を開く権限がありません"
+                          "（1024 未満は root が要ります）。--port で 1024 以上を指定してください。")
+                     (str "kobo: 起動できませんでした: " (.-message err))))
+                  (set! (.-exitCode js/process) 1)))))
      ;; **第 2 引数の "127.0.0.1" を外さないこと。** 外した瞬間、これは
      ;; LAN に対する遠隔実行になる。
      ;;

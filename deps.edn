@@ -11,7 +11,7 @@
          :git/sha "39be9cfc054ea6062a48865c523fdc8e894e6123"}
         io.github.kotoba-lang/kotoba-ui
         {:git/url "https://github.com/kotoba-lang/kotoba-ui.git"
-         :git/sha "4fd389966335564b53ed2cbdc41f0868ede73332"}
+         :git/sha "3114805dfd6f2faf908c94e6346a9b92837414c1"}
         io.github.kotoba-lang/appkit
         {:git/url "https://github.com/kotoba-lang/appkit.git"
          :git/sha "03b1c5373817229060f3fac9e41e97775c320997"}}
