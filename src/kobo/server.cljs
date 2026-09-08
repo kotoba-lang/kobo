@@ -40,7 +40,7 @@
   対して使う道具である。"
   (:require ["node:crypto" :as crypto]
             ["node:http" :as http]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [kobo.host.stream-node :as sh]
             [kobo.ui :as ui]
             [kobo.workbench :as wb]

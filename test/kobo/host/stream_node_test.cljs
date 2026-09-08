@@ -1,7 +1,7 @@
 (ns kobo.host.stream-node-test
   "実行中の状態が workbench に載り、終わったら receipt に移ることを確認する。"
   (:require [cljs.test :refer [deftest is testing async]]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [kobo.host.stream-node :as sh]
             [kobo.ui :as ui]
             [kobo.workbench :as wb]))

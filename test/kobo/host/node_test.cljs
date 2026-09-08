@@ -2,7 +2,7 @@
   "Proves the loop closes: open a terminal, run a command, and the result is
   in the same workbench value the console renders."
   (:require [cljs.test :refer [deftest is testing]]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [kobo.host.node :as host]
             [kobo.ui :as ui]
             [kobo.workbench :as wb]))
