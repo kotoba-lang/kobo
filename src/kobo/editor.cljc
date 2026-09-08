@@ -1,5 +1,5 @@
 (ns kobo.editor
-  (:require [clojure.string :as str]))
+  (:require [kotoba.lang.text :as str]))
 
 (def aiueos-known-keys
   #{:aiueos/component

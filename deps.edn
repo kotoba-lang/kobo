@@ -5,7 +5,12 @@
  ;; overrides them to sibling checkouts for monorepo work, and CI runs the
  ;; plain git path — which proves kobo is still consumable, not merely that it
  ;; compiles next to its siblings.
- :deps {io.github.kotoba-lang/kuro
+ :deps {
+        ;; kotoba.lang.text, not clojure.string. Pinned as an explicit floor:
+        ;; tools.deps takes the NEWEST sha it is shown, so without a floor here
+        ;; this repo silently rides whatever a sibling happens to name.
+        io.github.kotoba-lang/text {:git/sha "73bdb13ae7a3d004b44bca08be03a3191157a38f"}
+       io.github.kotoba-lang/kuro
         {:git/url "https://github.com/kotoba-lang/kuro.git"
          ;; :terminal-repo 改名 + receipt の :kuro/isolation
          :git/sha "dd713065a630534c466fc97d734979a9e0b1438d"}

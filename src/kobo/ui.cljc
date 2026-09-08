@@ -17,7 +17,7 @@
   Pure `.cljc` hiccup on the kotoba-ui stack (single require point, layout
   from shell, colors from the theme map)."
   (:require [appkit.core :as appkit]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [kotoba-ui.core :as ui]
             [kuro.ansi :as ansi]
             [kuro.stream :as kstream]))

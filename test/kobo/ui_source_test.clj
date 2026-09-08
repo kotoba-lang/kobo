@@ -6,7 +6,7 @@
   no raw hex / px font-size / font-family in app code, theme is one map) are
   only visible in the source, so this is a `.clj` test that reads the file.
   Kept out of the `.cljc` suite because `slurp` has no ClojureScript analogue."
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             [clojure.test :refer [deftest is testing]]))
 
 (def ^:private src (slurp "src/kobo/ui.cljc"))
