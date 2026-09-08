@@ -17,7 +17,7 @@
 
       clojure -M:browser-render:test -d test-browser"
   (:require [browser.core :as browser]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [clojure.test :refer [deftest is testing]]
             [kobo.ui :as ui]
             [kobo.workbench :as wb]

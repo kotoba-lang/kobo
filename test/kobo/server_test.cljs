@@ -2,7 +2,7 @@
   "実サーバを立てて実 HTTP で叩く。モックしない —— この面の価値は
   『ブラウザから触れる』ことなので、ブラウザがやることをやって確かめる。"
   (:require [cljs.test :refer [deftest is testing async]]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [kobo.server :as server]))
 
 (def node (.-execPath js/process))
