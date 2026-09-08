@@ -1,5 +1,5 @@
 (ns kobo.ui-test
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             [clojure.test :refer [deftest is testing]]
             [design-quality.audit :as audit]
             [kobo.editor :as editor]
