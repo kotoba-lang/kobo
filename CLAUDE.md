@@ -20,7 +20,7 @@
 font-family を app 側に書かない —— 色と型は token（`var(--hig-*)`）から取る。
 layout は `kotoba-ui.shell` の scaffold から組む。
 
-`test/kobo/ui_source_test.clj` がこれをソーステキストに対して検査する。
+`test/kobo/ui_source_test.cljk` がこれをソーステキストに対して検査する。
 **render 結果は誰が書いた CSS かを見ない**ので、design-quality のスコアが
 100 でもこの規律の遵守は証明されない。両方要る。
 

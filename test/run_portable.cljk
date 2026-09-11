@@ -1,7 +1,7 @@
 #!/usr/bin/env nbb
 ;; The PORTABLE suite on nbb, separate from `run_host_tests.cljs`.
 ;;
-;;   nbb --classpath "src:test:$(clojure -Spath -M:test)" test/run_portable.cljs
+;;   nbb --classpath "src:test:$(clojure -Spath -M:test)" test/run_portable.cljk
 ;;
 ;; Two runners, and the split is the repository's own: `run_host_tests.cljs`
 ;; covers `kobo.host.*`, which is ClojureScript on Node by design and cannot

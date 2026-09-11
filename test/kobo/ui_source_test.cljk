@@ -9,7 +9,7 @@
   (:require [kotoba.lang.text :as str]
             [clojure.test :refer [deftest is testing]]))
 
-(def ^:private src (slurp "src/kobo/ui.cljc"))
+(def ^:private src (slurp "src/kobo/ui.cljk"))
 
 (deftest theme-map-is-the-only-place-a-hex-belongs
   (let [body (str/replace src #"\{:accent \"#[0-9A-Fa-f]{6}\"[^}]*\}" "")]
