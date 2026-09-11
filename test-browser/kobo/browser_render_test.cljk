@@ -30,7 +30,7 @@
       (wb/open-terminal "t1" :terminal-repo)
       (wb/command-receipt "t1" (t/command ["git" "status" "--short"])
                           {:exit-code 0
-                           :stdout (str esc "[32mM " esc "[0msrc/kobo/ui.cljc\n")
+                           :stdout (str esc "[32mM " esc "[0msrc/kobo/ui.cljk\n")
                            :duration-ms 41})
       (ui/console)))
 
@@ -63,7 +63,7 @@
       ;; ここを 1 文字列で照合すると、正しく描けているのに落ちる。
       (is (contains? texts "kobo"))
       (is (every? texts ["git" "status" "--short"]))
-      (is (contains? texts "src/kobo/ui.cljc"))
+      (is (contains? texts "src/kobo/ui.cljk"))
       (testing "the mode badge shows the grant scope, not a safety claim"
         (is (contains? texts "repo"))
         (is (not (contains? texts "safe")))))

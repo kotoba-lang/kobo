@@ -34,14 +34,14 @@
               (wb/open-terminal "t1" :terminal-repo)
               (wb/command-receipt "t1" (t/command ["git" "status"])
                                   {:exit-code 0
-                                   :stdout (str e "[32mM " e "[0msrc/kobo/ui.cljc\n")}))
+                                   :stdout (str e "[32mM " e "[0msrc/kobo/ui.cljk\n")}))
         html (ui/console w)]
     (testing "escape sequences never reach the page"
       (is (not (str/includes? html "[32m")))
       (is (not (str/includes? html e))))
     (testing "the colour survives as a class, not as an inline hex"
       (is (str/includes? html "t-fg-green"))
-      (is (str/includes? html "src/kobo/ui.cljc")))))
+      (is (str/includes? html "src/kobo/ui.cljk")))))
 
 (deftest no-reagent-only-attributes-in-the-markup
   ;; 実測 2026-08-04: 配信された console の出力 span がすべて `key="0"` を

@@ -3,8 +3,8 @@
   "private": true,
   "description": "nbb harness for kobo: the local workbench console server and the Node host tests.",
   "scripts": {
-    "test:host": "nbb --classpath \"$(clojure -Spath -M:test)\" test/run_host_tests.cljs",
-    "console": "nbb --classpath \"$(clojure -Spath -M:test)\" bin/kobo-console.cljs",
+    "test:host": "nbb --classpath \"$(clojure -Spath -M:test)\" test/run_host_tests.cljk",
+    "console": "nbb --classpath \"$(clojure -Spath -M:test)\" bin/kobo-console.cljk",
     "test:browser-render": "clojure -M:browser-render:test -d test-browser"
   },
   "devDependencies": {
