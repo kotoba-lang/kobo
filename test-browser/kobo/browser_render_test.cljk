@@ -15,7 +15,7 @@
   のみ走る。**browser 側から継承した制約**であって、ここで発明した制約では
   ない。
 
-      clojure -M:browser-render:test -d test-browser"
+      kbb -M:browser-render:test -d test-browser"
   (:require [browser.core :as browser]
             [kotoba.lang.text :as str]
             [clojure.test :refer [deftest is testing]]

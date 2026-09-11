@@ -69,7 +69,7 @@ htmldom の `:local/root` 循環があり git 座標で表現できない）。*
 ## テスト
 
 ```sh
-clojure -M:test                   # モデル + console + design-quality gate（JVM）
+kbb -M:test                   # モデル + console + design-quality gate（JVM）
 npm install && npm run test:host  # host 配線と HTTP サーバ（nbb、実際に spawn する）
 npm run test:browser-render       # console を kotoba-lang/browser で描く（monorepo のみ）
 ```
@@ -87,5 +87,5 @@ cljs ビルドを入れるかどうかを決める合図。
 ## 変更を出すとき
 
 superproject の pin 前進は
-`nbb --classpath ".:scripts/nbb_compat" scripts/west-pin-put.cljs kobo <sha>`。
+`kbb --backend sci --classpath ".:scripts/nbb_compat" scripts/west-pin-put.cljs kobo <sha>`。
 手で west.yml を編集しない。

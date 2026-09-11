@@ -13,7 +13,7 @@
       (wb/open-buffer (wb/buffer "README.md" "# hello\nworld\n"))
       (wb/open-terminal "t1" :terminal-repo)
       (wb/open-terminal "t2" :terminal-build)
-      (wb/command-receipt "t1" (t/command ["clojure" "-M:test"])
+      (wb/command-receipt "t1" (t/command ["kbb" "-M:test"])
                           {:exit-code 0 :stdout "ok\n"
                            :stdout-cid "bafkreiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                            :duration-ms 812})
