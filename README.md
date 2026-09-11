@@ -164,7 +164,7 @@ browser, not invented here.**
 ## Tests
 
 ```sh
-clojure -M:test                 # model + console + design-quality gate (JVM)
+kbb -M:test                 # model + console + design-quality gate (JVM)
 npm install && npm run test:host  # host wiring + the HTTP server (nbb), for real
 ```
 

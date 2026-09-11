@@ -1,11 +1,11 @@
-#!/usr/bin/env nbb
+#!/usr/bin/env kbb
 ;; The PORTABLE suite on nbb, separate from `run_host_tests.cljs`.
 ;;
-;;   nbb --classpath "src:test:$(clojure -Spath -M:test)" test/run_portable.cljk
+;;   kbb --backend sci --classpath "src:test:$(kbb -Spath -M:test)" test/run_portable.cljk
 ;;
 ;; Two runners, and the split is the repository's own: `run_host_tests.cljs`
 ;; covers `kobo.host.*`, which is ClojureScript on Node by design and cannot
-;; load on the JVM. Its header says `clojure -M:test` covers the portable
+;; load on the JVM. Its header says `kbb -M:test` covers the portable
 ;; model and the console — and that was true and also the whole gap. The JVM
 ;; is one runtime. `kobo.ui` and `kobo.workbench` are `.cljc`, which is a claim
 ;; that they run on two, and nothing was checking the second one.
