@@ -1,5 +1,5 @@
 (ns kobo.workbench-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [kotoba.test :refer [deftest is]]
             [kobo.editor :as editor]
             [kobo.grant :as grant]
             [kobo.workbench :as wb]

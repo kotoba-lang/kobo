@@ -7,7 +7,7 @@
   only visible in the source, so this is a `.clj` test that reads the file.
   Kept out of the `.cljc` suite because `slurp` has no ClojureScript analogue."
   (:require [kotoba.lang.text :as str]
-            [clojure.test :refer [deftest is testing]]))
+            [kotoba.test :refer [deftest is testing]]))
 
 (def ^:private src (slurp "src/kobo/ui.cljk"))
 
