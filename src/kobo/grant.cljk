@@ -1,5 +1,5 @@
 (ns kobo.grant
-  (:require [clojure.set :as set]))
+  (:require [kotoba.lang.coll :as set]))
 
 (defn normalize-capabilities [caps]
   (->> caps (remove nil?) (map str) set))
