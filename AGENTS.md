@@ -1,4 +1,4 @@
-# CLAUDE.md — kobo
+# AGENTS.md — kobo
 
 `kobo` は Kotoba の **workbench**: editor / terminal / grant / receipt の
 モデル（純 `.cljc`）、read-only の console、そして実行と配信を担う host 層
